@@ -1,3 +1,4 @@
+import 'package:b_app/Features/common/main_screen.dart';
 import 'package:b_app/Features/common/splash_screen.dart';
 import 'package:b_app/Features/home/services/app_database.dart';
 import 'package:b_app/Features/home/view/home_screen.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => HomeViewModel(database))
       ],
       child: MaterialApp(
-        home: HomeScreen(),
+        home: BaseScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );

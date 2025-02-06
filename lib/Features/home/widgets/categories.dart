@@ -1,5 +1,5 @@
-// lib/widgets/categories_grid.dart
 import 'package:b_app/Features/home/widgets/image.dart';
+import 'package:b_app/common_widgets/style.dart';
 import 'package:flutter/material.dart';
 
 class CategoriesGrid extends StatelessWidget {
@@ -19,42 +19,73 @@ class CategoriesGrid extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: styling(fontSize: 20),
+              ),
+              Text(
+                'View All',
+                style: styling(fontSize: 13),
+              ),
+            ],
           ),
         ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            childAspectRatio: 1,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return Column(
-              children: [
-                Expanded(
-                  child: CustomNetworkImage(
-                    imageUrl: category.imageUrl,
-                    width: 100,
-                    height: 100,
+        SizedBox(
+          height: 150, // Adjust based on your content size
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: categories.map((category) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 16.0), // Adjust spacing
+                  child: Container(
+                    width: 160, // Set fixed width
+                    height: 145, // Set fixed height
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: const Color.fromARGB(255, 169, 169, 169)),
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CustomNetworkImage(
+                                imageUrl: category.imageUrl,
+                                width: double.infinity,
+                                height: 120,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            category.title ?? '',
+                            style: styling(),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  category.title ?? '',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          },
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ],
     );

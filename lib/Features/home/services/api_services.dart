@@ -8,29 +8,63 @@ class ApiServices {
   static const String baseUrl =
       "https://64bfc2a60d8e251fd111630f.mockapi.io/api/Todo";
   final AppDatabase database;
+
   ApiServices(this.database);
 
   Future<List<HomeModel>> fetchHomeData() async {
     try {
+      // Try API first
       final response = await http.get(Uri.parse(baseUrl));
-      log(response.body);
+      log('API Response Status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
-        return jsonData
-            .map((item) => HomeModel(
-                  type: item['type'],
-                  title: item['title'],
-                  id: item['id'],
-                  imageUrl: item['imageUrl'],
-                  contents:
-                      jsonEncode(item['contents']), // Convert to JSON string
-                ))
-            .toList();
+        final homeModels =
+            jsonData.map((item) => HomeModel.fromJson(item)).toList();
+
+        // Cache the data
+        await _saveToDatabase(homeModels);
+        return homeModels;
       } else {
-        throw Exception('Error occurred: ${response.statusCode}');
+        log('API Error: ${response.statusCode}');
+        return _loadFromDatabase();
       }
     } catch (e) {
-      throw Exception('Error occurred: $e');
+      log('Network Error: $e');
+      return _loadFromDatabase();
+    }
+  }
+
+  Future<void> _saveToDatabase(List<HomeModel> data) async {
+    try {
+      await database.homeDao.clearHomeData(); // Clear existing data
+      await database.homeDao.insertHomeData(data);
+      log('Successfully cached ${data.length} items');
+    } catch (e) {
+      log('Error caching data: $e');
+    }
+  }
+
+  Future<List<HomeModel>> _loadFromDatabase() async {
+    try {
+      final cachedData = await database.homeDao.getAllHomeData();
+      log('Loaded ${cachedData.length} items from cache');
+
+      // Sort data by type to maintain section order
+      cachedData.sort((a, b) {
+        final typeOrder = {
+          'banner_slider': 0,
+          'catagories': 1,
+          'products': 2,
+          'banner_single': 3,
+        };
+        return (typeOrder[a.type] ?? 999).compareTo(typeOrder[b.type] ?? 999);
+      });
+
+      return cachedData;
+    } catch (e) {
+      log('Error loading cached data: $e');
+      return [];
     }
   }
 }
